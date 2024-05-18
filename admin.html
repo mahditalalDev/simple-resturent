@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Page</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./menu.css">
+    <style>
+        .prodcuts {
+            margin-top: 20px;
+        }
+        .meal img {
+            height: 200px;
+            object-fit: cover;
+        }
+        .preview {
+            display: block;
+            margin-top: 10px;
+            max-width: 100%;
+            height: auto;
+        }
+        .edit-button, .delete-button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container headercont">
+        <div class="row headerBar">
+            <img src="./skins/image_1.png" alt="" class="logo col-md-2 col-sm-2 headerimg" />
+            <h1 class="col-md-4 col-sm-6 resturentname">
+                SNACK & <span>MORE</span>
+            </h1>
+            <ul class="headermenu col-md-4 col-sm-12">
+                <a href="index.html">Home</a>
+                <a href="">Menu</a>
+                <a href="">Location</a>
+                <a href="">About</a>
+                <a href="admin.html">Admin</a>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container my-5" style="background-color: #ffffffbb; padding: 30px;" >
+        <h2>Add New Product</h2>
+        <form id="product-form">
+            <div class="form-group">
+                <label for="product-img">Image URL</label>
+                <input type="url" class="form-control" id="product-img" required>
+                <img id="image-preview" class="preview" src="#" alt="Image Preview" style="display: none;">
+            </div>
+            <div class="form-group">
+                <label for="product-title">Title</label>
+                <input type="text" class="form-control" id="product-title" required>
+            </div>
+            <div class="form-group">
+                <label for="product-description">Description</label>
+                <textarea class="form-control" id="product-description" rows="3" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="product-price">Price</label>
+                <input type="number" class="form-control" id="product-price" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Product</button>
+        </form>
+    </div>
+
+    <div id="product-items" class="container"  >
+        <div class="prodcuts my-5"style="border: none;padding: 10px;">
+            <div class="row row-cols-1 row-cols-md-3 g-4" id="product-list">
+                <p class="item-section col-md-12 mt-5">Burgers</p>
+                <!-- Product items will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Edit Product</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-product-form">
+                        <div class="form-group">
+                            <label for="edit-product-img">Image URL</label>
+                            <input type="url" class="form-control" id="edit-product-img" required>
+                            <img id="edit-image-preview" class="preview" src="#" alt="Image Preview" style="display: none;">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-product-title">Title</label>
+                            <input type="text" class="form-control" id="edit-product-title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-product-description">Description</label>
+                            <textarea class="form-control" id="edit-product-description" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-product-price">Price</label>
+                            <input type="number" class="form-control" id="edit-product-price" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+          loadProducts();
+  
+          document.getElementById('product-form').addEventListener('submit', addProduct);
+          document.getElementById('product-img').addEventListener('input', updateImagePreview);
+          document.getElementById('edit-product-form').addEventListener('submit', saveEditProduct);
+      });
+  
+      function addProduct(event) {
+          event.preventDefault();
+          const img = document.getElementById('product-img').value;
+          const title = document.getElementById('product-title').value;
+          const description = document.getElementById('product-description').value;
+          const price = document.getElementById('product-price').value;
+  
+          const product = { img, title, description, price };
+  
+          let products = JSON.parse(localStorage.getItem('products')) || [];
+          products.push(product);
+          localStorage.setItem('products', JSON.stringify(products));
+  
+          loadProducts();
+          document.getElementById('product-form').reset();
+          document.getElementById('image-preview').style.display = 'none';
+      }
+  
+      function loadProducts() {
+          const products = JSON.parse(localStorage.getItem('products')) || [];
+          const productList = document.getElementById('product-list');
+          productList.innerHTML = ''; // Clear the current product list
+          products.forEach(addProductToDOM);
+      }
+  
+      function addProductToDOM(product) {
+          const productHTML = `
+              <div class="col-4 mb-5 meal " >
+                  <div class="card h-100 w-100" style="padding:10px">
+                      <img src="${product.img}" class="card-img-top" alt="${product.title}">
+                      <div class="card-body">
+                          <h5 class="card-title">${product.title}</h5>
+                          <p class="card-text">${product.description}</p>
+                      </div>
+                      <div class="card-footer">
+                          <h3 class="text-danger text-center">$${product.price}</h3>
+                          <button class="btn btn-warning edit-button" data-toggle="modal" data-target="#editModal" onclick="loadEditProduct('${product.title}')">Edit</button>
+                          <button class="btn btn-danger delete-button" onclick="confirmDeleteProduct('${product.title}')">Delete</button>
+                      </div>
+                  </div>
+              </div>`;
+          const productList = document.getElementById('product-list');
+          productList.innerHTML += productHTML;
+      }
+  
+      function confirmDeleteProduct(title) {
+          if (confirm('Are you sure you want to delete this product?')) {
+              deleteProduct(title);
+          }
+      }
+  
+      function deleteProduct(title) {
+          let products = JSON.parse(localStorage.getItem('products')) || [];
+          products = products.filter(product => product.title !== title);
+          localStorage.setItem('products', JSON.stringify(products));
+          loadProducts();
+      }
+  
+      function loadEditProduct(title) {
+          let products = JSON.parse(localStorage.getItem('products')) || [];
+          const product = products.find(product => product.title === title);
+  
+          document.getElementById('edit-product-img').value = product.img;
+          document.getElementById('edit-product-title').value = product.title;
+          document.getElementById('edit-product-description').value = product.description;
+          document.getElementById('edit-product-price').value = product.price;
+  
+          document.getElementById('edit-image-preview').src = product.img;
+          document.getElementById('edit-image-preview').style.display = 'block';
+  
+          document.getElementById('edit-product-form').dataset.originalTitle = title;
+      }
+  
+      function saveEditProduct(event) {
+          event.preventDefault();
+          const originalTitle = document.getElementById('edit-product-form').dataset.originalTitle;
+          const img = document.getElementById('edit-product-img').value;
+          const title = document.getElementById('edit-product-title').value;
+          const description = document.getElementById('edit-product-description').value;
+          const price = document.getElementById('edit-product-price').value;
+  
+          let products = JSON.parse(localStorage.getItem('products')) || [];
+          const productIndex = products.findIndex(product => product.title === originalTitle);
+          products[productIndex] = { img, title, description, price };
+          localStorage.setItem('products', JSON.stringify(products));
+  
+          loadProducts();
+          $('#editModal').modal('hide');
+      }
+  
+      function updateImagePreview() {
+          const imgURL = document.getElementById('product-img').value;
+          const imagePreview = document.getElementById('image-preview');
+          imagePreview.src = imgURL;
+          imagePreview.style.display = 'block';
+      }
+  </script>
+  
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>
